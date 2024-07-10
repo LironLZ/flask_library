@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Library - Add Customer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const SERVER = 'https://my-library-flask-sql-alchemy.onrender.com';
+
+        const decodeJwt = (token) => {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(base64);
+            } catch (e) {
+                console.error('Invalid token', e);
+                return null;
+            }
+        };
+
+        const token = localStorage.getItem('accessToken');
+
+        if (token) {
+            const user = decodeJwt(token);
+            if (user) {
+                console.log('User authenticated:', user);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            } else {
+                console.error('Token invalid.');
+            }
+        } else {
+            console.error('No access token found. Please log in.');
+        }
+
+        const signUp = () => {
+            const form = document.getElementById('signup-form');
+            const errorMessage = document.getElementById('error-message');
+
+            const userName = form.elements['user_name'].value;
+            const city = form.elements['city'].value;
+            const age = form.elements['age'].value;
+            const email = form.elements['email'].value;
+            const password = form.elements['password'].value;
+            const isAdmin = form.elements['is_admin'].checked;
+
+            const data = {
+                user_name: userName,
+                city: city,
+                age: parseInt(age),
+                email: email,
+                password: password,
+                is_admin: isAdmin
+            };
+
+            axios.post(SERVER + '/register', data)
+                .then(response => {
+                    console.log('Registration successful:', response.data);
+                    window.location.href = '../login/login.html';
+                })
+                .catch(error => {
+                    console.error('Registration failed:', error.response.data);
+                    errorMessage.textContent = error.response.data.message;
+                });
+        };
+    </script>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-0hCXyCLK7mceaeoWdODnF0O0Nq5ZaPpa7A&s"
+        type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="add_customer.html">Add a customer</a></li>
+        <li><a href="add_book.html">Add a book</a></li>
+        <li><a href="delete_book.html">Delete a book</a></li>
+        <li><a href="delete_customer.html">Delete a customer</a></li>
+        <li><a href="loans.html">Loan a book</a></li>
+        <li><a href="returns.html">Return a book</a></li>
+        <li><a href="books.html">Display books</a></li>
+        <li><a href="customers.html">Display all customers</a></li>
+        <li><a href="loans.html">Display all loans</a></li>
+        <li><a href="late_loans.html">Display late loans</a></li>
+        <li><a href="find_book.html">Find book by name</a></li>
+        <li><a href="customers.html">List of Customers</a></li>
+    </ul>
+    <div class="main-content">
+        <header>
+            <h1 style="text-align: center;">My Library</h1>
+        </header>
+        <div class="signup-container">
+            <h2>Add Customer</h2>
+            <form id="signup-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="user_name" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-city"></i>
+                    <input type="text" id="city" placeholder="City" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-birthday-cake"></i>
+                    <input type="number" id="age" placeholder="Age" min="0" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-user-shield"></i>
+                    <label>
+                        <input type="checkbox" id="is_admin"> Admin
+                    </label>
+                </div>
+                <button type="button" onclick="signUp()">Sign up</button>
+                <p id="error-message" class="error-message"></p>
+                <p>Already have an account? <a href="../login/login.html">Click here</a></p>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

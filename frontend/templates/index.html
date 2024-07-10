@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="add_customer.html">Add a customer</a></li>
+        <li><a href="add_book.html">Add a book</a></li>
+        <li><a href="delete_book.html">Delete a book</a></li>
+        <li><a href="delete_customer.html">Delete a customer</a></li>
+        <li><a href="loans.html">Loan a book</a></li>
+        <li><a href="returns.html">Return a book</a></li>
+        <li><a href="books.html">Display books</a></li>
+        <li><a href="customers.html">Display all customers</a></li>
+        <li><a href="loans.html">Display all loans</a></li>
+        <li><a href="late_loans.html">Display late loans</a></li>
+        <li><a href="find_book.html">Find book by name</a></li>
+        <li><a href="customers.html">List of Customers</a></li>
+
+
+
+    </ul>
+    <nav class="navbar is-light" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="#">
+                <span class="icon-text">
+                    <span class="icon">
+                        <i class="fas fa-book"></i>
+                    </span>
+                    <span>Library</span>
+                </span>
+            </a>
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="#" onclick="showSection('home')">Home</a>
+                <a class="navbar-item" href="#" onclick="showSection('search')">Gallery</a>
+            </div>
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <div class="buttons" id="nav-logged-out">
+                        <a class="button is-primary" id="login-btn">Sign In</a>
+                        <a class="button is-light" id="register-btn">Sign Up</a>
+                    </div>
+                    <div class="buttons" id="nav-logged-in" style="display: none;">
+                        <a class="button is-primary" onclick="showUserProfile()">My Profile</a>
+                        <a class="button is-light" onclick="logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <section class="hero is-info is-medium">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">Welcome to the Public Library</h1>
+                <h2 class="subtitle">Explore our collection of mint condition books.</h2>
+            </div>
+        </div>
+    </section>
+    <section class="section" id="home">
+        <div class="container">
+            <div id="auth-content" class="content has-text-centered">
+                <p>Sign in or create an account to get started.</p>
+                <button class="button is-primary mr-2" id="login-btn">Sign In</button>
+                <button class="button is-light" id="register-btn">Sign Up</button>
+            </div>
+            <div id="carousel-container" class="mt-4"></div>
+        </div>
+    </section>
+    <section class="section" id="form-content"></section>
+    <section class="section" id="book-content"></section>
+    <section class="section" id="user-profile" style="display:none;"></section>
+    <section class="section" id="search" style="display:none;">
+        <div class="container">
+            <h2 class="title">Find Your Next Read</h2>
+            <form id="search-form" class="field has-addons">
+                <div class="control is-expanded">
+                    <input type="text" id="search-query" class="input" placeholder="Search by title, author, or genre"
+                        required>
+                </div>
+                <div class="control">
+                    <button type="submit" class="button is-primary">Search</button>
+                </div>
+            </form>
+            <div id="search-results" class="mt-4"></div>
+        </div>
+    </section>
+    <!-- User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">User Profile</p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <div id="user-modal-body"></div>
+            </section>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bulma/js/bulma.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const SERVER = 'https://backend-render-o92w.onrender.com/';
+        function addBook(event) {
+            event.preventDefault();
+            const token = localStorage.getItem('acc_token');
+            if (!token) {
+                console.error('Access token not found');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('bookName', document.getElementById('bookName').value);
+            formData.append('bookAuthor', document.getElementById('bookAuthor').value);
+            formData.append('bookPublished', document.getElementById('bookPublished').value);
+            formData.append('loanType', document.getElementById('loanType').value);
+            formData.append('bookImage', document.getElementById('bookImage').files[0]);
+
+            axios.post(SERVER + 'addBook', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    alert("Book added");
+                    console.log('Book added:', response.data);
+                })
+                .catch(error => console.error('Error adding book:', error));
+        }
+    </script>
+</head>
+
+<body>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="add_customer.html">Add a customer</a></li>
+        <li><a href="add_book.html">Add a book</a></li>
+        <li><a href="delete_book.html">Delete a book</a></li>
+        <li><a href="delete_customer.html">Delete a customer</a></li>
+        <li><a href="loans.html">Loan a book</a></li>
+        <li><a href="returns.html">Return a book</a></li>
+        <li><a href="books.html">Display books</a></li>
+        <li><a href="customers.html">Display all customers</a></li>
+        <li><a href="loans.html">Display all loans</a></li>
+        <li><a href="late_loans.html">Display late loans</a></li>
+        <li><a href="find_book.html">Find book by name</a></li>
+        <li><a href="customers.html">List of Customers</a></li>
+
+
+
+    </ul>
+    <div class="navbar">
+        <a href="client_userPage.html">USER PAGE</a>
+        <a href="bookPage.html">BOOK PAGE</a>
+        <div id="admin-links"></div>
+    </div>
+    <div class="container">
+        <h1>Add Book</h1>
+        <form id="addBookForm" onsubmit="addBook(event);">
+            <label for="bookName">Book Name:</label>
+            <input type="text" id="bookName" name="bookName" required><br>
+            <label for="bookAuthor">Book Author:</label>
+            <input type="text" id="bookAuthor" name="bookAuthor" required><br>
+            <label for="bookPublished">Book Published:</label>
+            <input type="date" id="bookPublished" name="bookPublished" required><br>
+            <label for="loanType">Loan Type:</label>
+            <input type="number" id="loanType" name="loanType" required min="1" max="3"><br>
+            <label for="bookImage">Book Image:</label>
+            <input type="file" id="bookImage" name="bookImage" accept="image/*" required><br>
+            <button type="submit">Add Book</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = localStorage.getItem('acc_token');
+
+            if (!token) {
+                console.error('JWT token is missing');
+                return;
+            }
+
+            const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+            const userRole = tokenPayload.sub.role;
+
+            if (userRole === 'Admin') {
+                const userListLink = document.createElement('a');
+                userListLink.href = 'userPage.html';
+                userListLink.innerText = 'USERS LIST'
+                document.querySelector('#admin-links').appendChild(userListLink);
+            }
+        });
+    </script>
+</body>
+
+</html>
+{% endblock %}

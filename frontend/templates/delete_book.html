@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library - Remove Book</title>
+    <link rel="stylesheet" href="remove_book.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const SERVER = 'https://my-libary-flask-sql-alchemy.onrender.com';
+
+        // Function to parse JWT token
+        const parseJwt = (token) => {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(base64);
+            } catch (e) {
+                console.error('Invalid token', e);
+                return null;
+            }
+        };
+
+        // Function to display success message
+        const showSuccessMessage = () => {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = 'Book deleted successfully!';
+            successMessage.style.display = 'block';
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const removeButton = document.getElementById('removeButton');
+            const errorMessage = document.querySelector('.error-message');
+
+            removeButton.addEventListener('click', function () {
+                const bookId = document.getElementById('bookId').value;
+                const token = localStorage.getItem('accessToken'); // Retrieve token from localStorage
+
+                if (!token) {
+                    console.error('JWT token not found in localStorage');
+                    errorMessage.textContent = 'JWT token not found. Please log in.';
+                    return;
+                }
+
+                // Parse JWT token to get user information
+                const userInfo = parseJwt(token);
+                if (!userInfo) {
+                    console.error('Invalid token');
+                    errorMessage.textContent = 'Invalid token. Please log in again.';
+                    return;
+                }
+
+                axios.delete(`${SERVER}/book/delete/${bookId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+                    .then(function (response) {
+                        showSuccessMessage(); // Display success message
+                    })
+                    .catch(function (error) {
+                        if (error.response) {
+                            console.error('Error:', error.response.data);
+                            errorMessage.textContent = 'Failed to remove book: ' + error.response.data.message;
+                        } else {
+                            console.error('Error:', error.message);
+                            errorMessage.textContent = 'Failed to remove book. Please try again.';
+                        }
+                    });
+            });
+        });
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-0hCXyCLK7mceaeoWdODnF0O0Nq5ZaPpa7A&s"
+        type="image/x-icon">
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="add_customer.html">Add a customer</a></li>
+                <li><a href="add_book.html">Add a book</a></li>
+                <li><a href="delete_book.html">Delete a book</a></li>
+                <li><a href="delete_customer.html">Delete a customer</a></li>
+                <li><a href="loans.html">Loan a book</a></li>
+                <li><a href="returns.html">Return a book</a></li>
+                <li><a href="books.html">Display books</a></li>
+                <li><a href="customers.html">Display all customers</a></li>
+                <li><a href="loans.html">Display all loans</a></li>
+                <li><a href="late_loans.html">Display late loans</a></li>
+                <li><a href="find_book.html">Find book by name</a></li>
+                <li><a href="customers.html">List of Customers</a></li>
+
+
+
+            </ul>
+        </div>
+        <div class="main-content">
+            <header>
+                <h1>My Library</h1>
+                <h2>Remove a Book</h2>
+            </header>
+            <div class="remove-book-container">
+                <form id="removeBookForm">
+                    <div class="input-group">
+                        <label for="bookId">Book ID:</label>
+                        <div class="input-with-icon">
+                            <input type="text" id="bookId" name="bookId" placeholder="Enter book ID...">
+                            <i class="fas fa-book"></i>
+                        </div>
+                    </div>
+                    <button type="button" id="removeButton">Remove Book</button>
+                    <p class="error-message"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Success and Error Messages -->
+    <div id="successMessage" class="success-message">
+        <p>Book removed successfully!</p>
+    </div>
+
+</body>
+
+</html>

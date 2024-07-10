@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Library - Loan Book</title>
+    <link rel="stylesheet" href="return_book.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-0hCXyCLK7mceaeoWdODnF0O0Nq5ZaPpa7A&s"
+        type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script>
+        const SERVER = 'https://my-libary-flask-sql-alchemy.onrender.com';
+
+        // Function to handle book return process
+        const returnBook = () => {
+            const bookNameInput = document.getElementById('book_name_to_return');
+
+            const token = localStorage.getItem('accessToken'); // Get JWT token from localStorage
+
+            if (!bookNameInput || !token) {
+                console.error('Book name input:', bookNameInput, 'Token:', token);
+                document.getElementById('error-message').innerText = 'Please provide book name and ensure you are logged in.';
+                return;
+            }
+
+            const bookName = bookNameInput.value.trim(); // Get book name from form
+
+            if (!bookName) {
+                console.error('Book name is empty.');
+                document.getElementById('error-message').innerText = 'Please provide book name.';
+                return;
+            }
+
+            axios.get(`${SERVER}/book/${bookName}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    const bookId = response.data.id;
+
+                    axios.post(`${SERVER}/bookloan/return`, {
+                        user_id: 1,
+                        book_id: bookId
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                        .then(response => {
+                            console.log(response.data.message);
+                            let modal = document.getElementById('successModal');
+                            modal.style.display = 'block';
+                            // Clear input fields and error messages if needed
+                            bookNameInput.value = '';
+                            document.getElementById('error-message').innerText = '';
+                        })
+                        .catch(error => {
+                            console.error('There was an error!', error);
+                            document.getElementById('error-message').innerText = error.response.data.message;
+                        });
+                })
+                .catch(error => {
+                    console.error('Error finding book:', error);
+                    document.getElementById('error-message').innerText = 'Book not found. Please check the book name.';
+                });
+        };
+
+        // Modal handling
+        document.addEventListener('DOMContentLoaded', function () {
+            let modal = document.getElementById('successModal');
+            let span = document.getElementsByClassName('close')[0];
+
+            span.onclick = function () {
+                modal.style.display = 'none';
+            };
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="add_customer.html">Add a customer</a></li>
+                <li><a href="add_book.html">Add a book</a></li>
+                <li><a href="delete_book.html">Delete a book</a></li>
+                <li><a href="delete_customer.html">Delete a customer</a></li>
+                <li><a href="loans.html">Loan a book</a></li>
+                <li><a href="returns.html">Return a book</a></li>
+                <li><a href="books.html">Display books</a></li>
+                <li><a href="customers.html">Display all customers</a></li>
+                <li><a href="loans.html">Display all loans</a></li>
+                <li><a href="late_loans.html">Display late loans</a></li>
+                <li><a href="find_book.html">Find book by name</a></li>
+                <li><a href="customers.html">List of Customers</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <header>
+                <center>
+                    <h1>My Library</h1>
+                </center>
+            </header>
+            <div class="content">
+                <center>
+                    <div class="loan-container">
+                        <h2>Return Book</h2>
+                        <form id="loan-book-form">
+                            <div class="input-group">
+                                <i class="fas fa-book"></i>
+                                <input type="text" id="book_name_to_return" placeholder="Book Name" required>
+                            </div>
+                            <button type="button" onclick="returnBook()">Return Book</button>
+                            <p id="error-message" class="error-message"></p>
+                        </form>
+                    </div>
+                </center>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal HTML -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Book returned successfully!</p>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

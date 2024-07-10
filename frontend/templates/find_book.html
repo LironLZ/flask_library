@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library - Find Book by Name</title>
+    <link rel="stylesheet" href="find_book.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer>
+        const SERVER = 'https://my-libary-flask-sql-alchemy.onrender.com';
+
+        const parseJwt = (token) => {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(base64);
+            } catch (e) {
+                console.error('Invalid token', e);
+                return null;
+            }
+        };
+
+        const token = localStorage.getItem('accessToken');
+
+        if (token) {
+            const user = parseJwt(token);
+            if (user) {
+                console.log('User authenticated:', user);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            } else {
+                console.error('Invalid token found.');
+            }
+        } else {
+            console.error('No access token found. Please log in.');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchButton = document.getElementById('searchButton');
+            const bookNameInput = document.getElementById('bookNameInput');
+            const booksTableBody = document.querySelector('#booksTable tbody');
+            const errorMessage = document.querySelector('.error-message');
+
+            if (!searchButton || !bookNameInput || !booksTableBody || !errorMessage) {
+                console.error('One or more required elements not found.');
+                return;
+            }
+
+            searchButton.addEventListener('click', findBookByName);
+
+            async function findBookByName() {
+                const bookName = bookNameInput.value.trim();
+                if (bookName === '') {
+                    alert('Please enter a book name');
+                    return;
+                }
+
+                try {
+                    const response = await axios.get(`${SERVER}/book/${encodeURIComponent(bookName)}`);
+                    const book = response.data;
+
+                    booksTableBody.innerHTML = '';
+                    if (!book) {
+                        errorMessage.textContent = 'Book not found';
+                        return;
+                    }
+
+                    errorMessage.textContent = ''; // Clear error message if book is found
+                    const imageUrl = SERVER + '/media' + book.image_src.split('media')[1];
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${book.id}</td>
+                        <td>${book.book_name}</td>
+                        <td>${book.author}</td>
+                        <td>${book.year_published}</td>
+                        <td>${book.type_1_2_3}</td>
+                        <td>${book.is_available ? 'Yes' : 'No'}</td>
+                        <td>${book.is_deleted ? 'Yes' : 'No'}</td>
+                        <td>${book.loan_period}</td>
+                        <td><img src="${imageUrl}" alt="Book Image" style="max-width: 100px; max-height: 100px;" /></td>
+                    `;
+                    booksTableBody.appendChild(row);
+                } catch (error) {
+                    console.error('Error fetching book:', error);
+                    errorMessage.textContent = `An error occurred while fetching the book: ${error.response?.data?.message || error.message}`;
+                }
+            }
+        });
+    </script>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-0hCXyCLK7mceaeoWdODnF0O0Nq5ZaPpa7A&s"
+        type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="add_customer.html">Add a customer</a></li>
+                <li><a href="add_book.html">Add a book</a></li>
+                <li><a href="delete_book.html">Delete a book</a></li>
+                <li><a href="delete_customer.html">Delete a customer</a></li>
+                <li><a href="loans.html">Loan a book</a></li>
+                <li><a href="returns.html">Return a book</a></li>
+                <li><a href="books.html">Display books</a></li>
+                <li><a href="customers.html">Display all customers</a></li>
+                <li><a href="loans.html">Display all loans</a></li>
+                <li><a href="late_loans.html">Display late loans</a></li>
+                <li><a href="find_book.html">Find book by name</a></li>
+                <li><a href="customers.html">List of Customers</a></li>
+
+
+
+            </ul>
+        </div>
+        <div class="main-content">
+            <header>
+                <h1>My Library</h1>
+                <h2>Find Book by Name</h2>
+            </header>
+            <div class="search-bar">
+                <input type="text" id="bookNameInput" placeholder="Enter book name...">
+                <button id="searchButton"><i class="fa fa-search"></i> Search</button>
+            </div>
+            <div class="content">
+                <table id="booksTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Book Name</th>
+                            <th>Author</th>
+                            <th>Year Published</th>
+                            <th>Type</th>
+                            <th>Available</th>
+                            <th>Deleted</th>
+                            <th>Loan Period</th>
+                            <th>Image</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+                <p class="error-message"></p>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

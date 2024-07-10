@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library - Display Customers</title>
+    <link rel="stylesheet" href="display_customers.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer>
+        const SERVER = 'https://my-libary-flask-sql-alchemy.onrender.com';
+
+        const parseJwt = (token) => {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(base64);
+            } catch (e) {
+                console.error('Invalid token', e);
+                return null;
+            }
+        };
+
+        const token = localStorage.getItem('accessToken');
+
+        if (token) {
+            const user = parseJwt(token);
+            if (user) {
+                console.log('User authenticated:', user);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            } else {
+                console.error('Invalid token found.');
+            }
+        } else {
+            console.error('No access token found. Please log in.');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Document loaded, fetching users...');
+            fetchUsers();
+        });
+
+        async function fetchUsers() {
+            try {
+                const response = await axios.get(SERVER + '/users');
+                const users = response.data;
+                console.log('Users fetched successfully:', users);
+
+                displayUsers(users);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        }
+
+        const displayUsers = (users) => {
+            const tableBody = document.querySelector('#usersTable tbody');
+            tableBody.innerHTML = ''; // Clear existing table rows
+
+            users.forEach(user => {
+                const row = `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.user_name}</td>
+                        <td>${user.city}</td>
+                        <td>${user.age}</td>
+                        <td>${user.email}</td>
+                        <td>${user.created_at}</td>
+                        <td>${user.updated_at}</td>
+                        <td>${user.last_login_at}</td>
+                        <td>${user.is_admin ? 'Yes' : 'No'}</td>
+                        <td>${user.is_deleted ? 'Yes' : 'No'}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+    </script>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-0hCXyCLK7mceaeoWdODnF0O0Nq5ZaPpa7A&s"
+        type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="add_customer.html">Add a customer</a></li>
+                <li><a href="add_book.html">Add a book</a></li>
+                <li><a href="delete_book.html">Delete a book</a></li>
+                <li><a href="delete_customer.html">Delete a customer</a></li>
+                <li><a href="loans.html">Loan a book</a></li>
+                <li><a href="returns.html">Return a book</a></li>
+                <li><a href="books.html">Display books</a></li>
+                <li><a href="customers.html">Display all customers</a></li>
+                <li><a href="loans.html">Display all loans</a></li>
+                <li><a href="late_loans.html">Display late loans</a></li>
+                <li><a href="find_book.html">Find book by name</a></li>
+                <li><a href="customers.html">List of Customers</a></li>
+
+
+
+            </ul>
+        </div>
+        <div class="main-content">
+            <header>
+                <center>
+                    <h1>My Library</h1>
+                </center>
+                <br>
+                <h2>Display All Customers</h2>
+            </header>
+            <div class="content">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User Name</th>
+                            <th>City</th>
+                            <th>Age</th>
+                            <th>Email</th>
+                            <th>Created At</th>
+                            <th>Updated At</th>
+                            <th>Last Login At</th>
+                            <th>Is Admin</th>
+                            <th>Is Deleted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

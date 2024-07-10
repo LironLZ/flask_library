@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const SERVER = 'https://my-libary-flask-sql-alchemy.onrender.com';
+
+        // Function to parse JWT token
+        const parseJwt = (token) => {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(base64);
+            } catch (e) {
+                console.error('Invalid token', e);
+                return null;
+            }
+        };
+
+        // Check if there is a saved access token
+        const token = localStorage.getItem('accessToken');
+
+        if (token) {
+            // Parse the token to get user information
+            const user = parseJwt(token);
+            if (user) {
+                console.log('User authenticated:', user);
+                // Add the token to the Authorization header for every request
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            } else {
+                console.error('Invalid token found.');
+            }
+        } else {
+            console.error('No access token found. Please log in.');
+        }
+
+        // Login function
+        const login = () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+            const welcomeMessage = document.getElementById('welcome-message');
+
+            axios.post(`${SERVER}/login`, {
+                email: email,
+                password: password
+            })
+                .then(response => {
+                    if (response && response.data && response.data.access_token) {
+                        console.log(response.data);
+                        const token = response.data.access_token;
+                        const decoded = parseJwt(token);
+                        if (decoded && decoded.user_id) {
+                            const userId = decoded.user_id;
+                            // Display welcome message
+                            welcomeMessage.innerText = `Welcome back, User ${userId}!`;
+                            welcomeMessage.style.display = 'block';
+                        }
+                        // Store email and token in localStorage
+                        localStorage.setItem('email', email);
+                        localStorage.setItem('accessToken', token);
+                        window.location.href = 'index.html'; // Redirect to dashboard or desired page
+                    } else {
+                        errorMessage.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error.response ? error.response.data : error.message);
+                    errorMessage.style.display = 'block';
+                });
+        };
+    </script>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-0hCXyCLK7mceaeoWdODnF0O0Nq5ZaPpa7A&s"
+        type="image/x-icon">
+</head>
+
+<body class="body-login">
+    <div class="login-container">
+        <h2>Login</h2>
+        <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="text" id="email" placeholder="Email" required>
+        </div>
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" placeholder="Password" required>
+        </div>
+        <button onclick="login()">Login</button>
+        <p id="error-message" class="error-message" style="display: none;">Invalid email or password.</p>
+        <p id="welcome-message" class="welcome-message" style="display: none;"></p> <br> <br>
+        Don't have an account yet? <a href="register.html"> Click here</a> <br>
+    </div>
+</body>
+
+</html>
